@@ -41,7 +41,7 @@ services:
   graph-db:
     image: docker.io/library/neo4j:4.4
     environment:
-      - NEO4J_AUTH=neo4j/bloodhoundcommunityedition
+      - NEO4J_AUTH=neo4j/neo5j
       - NEO4J_dbms_allow__upgrade=true
     ports:
       - 7687:7687

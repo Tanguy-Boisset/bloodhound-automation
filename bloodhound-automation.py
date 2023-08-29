@@ -28,7 +28,7 @@ def docker_setup():
     
     with open("./templates/bloodhound.config.json", "r") as ifile:
         with open("./bloodhound.config.json", "w") as ofile:
-            ofile.write(ifile.read().replace("7687", str(args.port)))
+            ofile.write(ifile.read())
 
 
 if __name__=="__main__":
@@ -47,9 +47,8 @@ if __name__=="__main__":
     
     docker_setup()
     try:
-        docker_process = subprocess.run(["docker-compose", "up"], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        docker_output = docker_process.stdout
-        print(docker_output)
+        with open("/tmp/bh-auto-log.txt", "w") as output_log:
+            docker_process = subprocess.run(["docker-compose", "up"], text=True, stdout=output_log, stderr=subprocess.PIPE, check=True)
     except subprocess.CalledProcessError as e:
         print(Fore.RED + f"An error occurred: {e}")
         print(Style.RESET_ALL + 'Exiting...')
