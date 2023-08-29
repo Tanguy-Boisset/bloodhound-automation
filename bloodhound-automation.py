@@ -27,7 +27,6 @@ def check_directory_writable():
         # Directory does not exist
         return False
 
-
 def docker_setup():
     with open("./templates/docker-compose.yml", "r") as ifile:
         with open("./docker-compose.yml", "w") as ofile:
