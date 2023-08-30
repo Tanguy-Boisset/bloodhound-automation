@@ -10,7 +10,7 @@ import json
 from colorama import Fore, Back, Style
 
 
-def check_directory_writable():
+def checkDirWritable():
     directory_path = "/var/lib/postgresql/data"
     if os.path.exists(directory_path):
         if os.path.isdir(directory_path):
@@ -27,7 +27,7 @@ def check_directory_writable():
         # Directory does not exist
         return False
 
-def docker_setup():
+def dockerSetup():
     with open("./templates/docker-compose.yml", "r") as ifile:
         with open("./docker-compose.yml", "w") as ofile:
             ofile.write(ifile.read().replace("7687:", str(args.port) + ":"))
@@ -38,6 +38,7 @@ def docker_setup():
 
 
 def getAdminPassword():
+    start_time = time.time()
     while True:
         with open("/tmp/bh-auto-log.txt", "r") as logfile:
             log = logfile.read()
@@ -46,6 +47,9 @@ def getAdminPassword():
                 end_index = log.find('#"}', start_index)
                 adminPassword = log[start_index:end_index].strip()
                 return adminPassword
+            if time.time() - start_time > 40:
+                print(Fore.RED + "[-] Timeout : a problem occured, check the logs for more information" + Style.RESET_ALL)
+                exit(1)
 
 
 def getJWT(adminPassword):
@@ -61,7 +65,8 @@ def getJWT(adminPassword):
         jwt = response_json["data"]["session_token"]
         return jwt
     else:
-        print("Request was not successful. Status code:", response.status_code)
+        print(Fore.RED + f"[-] Login request was not successful. Status code : {response.status_code}\n{response.text}" + Style.RESET_ALL)
+        exit(1)
 
 
 def extractZip():
@@ -93,56 +98,63 @@ def uploadJSON(jwt, json_files):
             }
 
     # Reset password (needed for file upload)
-    data = {
+    passwData = {
         "needs_password_reset": False,
         "secret": "Chien2Sang<3"
     }
 
+    print(Fore.YELLOW + "[*] Starting json upload..." + Style.RESET_ALL)
     request0 = requests.get(base_url + f"/api/v2/self", headers=headers)
     
     userId = request0.json()["data"]["id"]
-    print(f"USERID : {userId}")
+    print(Fore.GREEN + f"   [+] UserID found : {userId}" + Style.RESET_ALL)
 
-    request0 = requests.put(base_url + f"/api/v2/bloodhound-users/{userId}/secret", headers=headers, data=json.dumps(data))
+    request0 = requests.put(base_url + f"/api/v2/bloodhound-users/{userId}/secret", headers=headers, data=json.dumps(passwData))
+    print(Fore.GREEN + f"   [+] Changed admin password to : {passwData['secret']}" + Style.RESET_ALL)
 
     request1 = requests.post(base_url + "/api/v2/file-upload/start", headers=headers)
     uploadId = request1.json()["data"]["id"]
+    print(Fore.GREEN + f"   [+] Started new upload batch, id : {uploadId}" + Style.RESET_ALL)
 
     for file in json_files:
-        print(f"Uploading: {file}")
         with open(file, "r", encoding="utf-8-sig") as f:
             data = f.read().encode("utf-8")
             request2 = requests.post(base_url + f"/api/v2/file-upload/{uploadId}", headers=headers, data=data)
+            print(Fore.GREEN + f"   [+] Successfully uploaded {file.split('/')[-1]}" + Style.RESET_ALL)
     
     request3 = requests.post(base_url + f"/api/v2/file-upload/{uploadId}/end", headers=headers)
 
-    print("Waiting for BloodHound to ingest the data")
+    print(Fore.YELLOW + f"   [*] Waiting for BloodHound to ingest the data. This could take a few minutes." + Style.RESET_ALL)
     while True:
         ingest = requests.get(base_url + f"/api/v2/file-upload?skip=0&limit=10&sort_by=-id", headers=headers)
         status = ingest.json()["data"][0]
 
         if status["id"] == uploadId and status["status_message"] == "Complete":
-            print("Ingest done")
-            break
+            print(Fore.GREEN + f"[+] The JSON upload was successful" + Style.RESET_ALL)
+            return passwData['secret']
         else:
             time.sleep(5)
     
 
 if __name__=="__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--port', type=int, required=True)
-    parser.add_argument('-z', '--zip', type=str, required=True)
+    parser = argparse.ArgumentParser(description="Automatically deploy a bloodhound instance and populate it with the SharpHound data")
+    parser.add_argument('-p', '--port', type=int, required=True, help="The custom port for the neo4j container")
+    parser.add_argument('-z', '--zip', type=str, required=True, help="The zip file from SharpHound containing the json extracts")
     args = parser.parse_args()
 
     # Check if /var/lib/postgresql/data is writable
     # If not, the docker command will crash
-    if not check_directory_writable():
-        print(Fore.RED + 'The folder "/var/lib/postgresql/data" does not exist or is not writable. Please run the following command and relaunch this script :')
+    if not checkDirWritable():
+        print(Fore.RED + '[-] The folder "/var/lib/postgresql/data" does not exist or is not writable. Please run the following command and relaunch this script :')
         print('sudo mkdir /var/lib/postgresql && sudo mkdir /var/lib/postgresql/data && sudo chmod 777 /var/lib/postgresql/data')
         print(Style.RESET_ALL + 'Exiting...')
         exit(1)
     
-    docker_setup()
+    dockerSetup()
+    print(Fore.GREEN + "[+] Docker setup done" + Style.RESET_ALL)
+    print(Fore.YELLOW + "[*] Launching BloodHound..." + Style.RESET_ALL)
+    print("The docker log are accessible in the /tmp/bh-auto-log.txt file")
+
     try:
         with open("/tmp/bh-auto-log.txt", "w") as output_log:
             docker_process = subprocess.Popen(["docker-compose", "up"], text=True, stdout=output_log, stderr=output_log)
@@ -152,19 +164,37 @@ if __name__=="__main__":
         exit(1)
     
     adminPassword = getAdminPassword()
-    print(adminPassword)
+    print(Fore.GREEN + f"[+] Found admin temporary password : {adminPassword}" + Style.RESET_ALL)
 
     while True:
         with open("/tmp/bh-auto-log.txt", "r") as logfile:
             log = logfile.read()
             if "Server started successfully" in log:
-                print("Server launched")
+                print(Fore.GREEN + "[+] Web server launched successfully" + Style.RESET_ALL)
                 break
     
     jwt = getJWT(adminPassword)
-    print(jwt)
+    print(Fore.GREEN + f"[+] Found JWT token : {jwt}" + Style.RESET_ALL)
 
     json_files = extractZip()
-    print(json_files)
+    print(Fore.GREEN + f"[+] Successfully extracted {len(json_files)} file{'s' if len(json_files) > 0 else ''}" + Style.RESET_ALL)
 
-    uploadJSON(jwt, json_files)
+    newAdminPassw = uploadJSON(jwt, json_files)
+    print(Fore.GREEN + 
+          f"""
+        #############################################################################
+        #                                                                           #
+        #              Your neo4j instance was successfully populated               #
+        #                        and is now accessible on :                         #
+        #                             localhost:{args.port}{" " * (36 - len(str(args.port)))}#
+        #                                                                           #
+        #                 The BloodHound Web GUI is accessible at :                 #
+        #                         http://localhost:8080                             #
+        #                     with the following credentials :                      #
+        #                         username : admin                                  #
+        #                         password : {newAdminPassw}{" " * (39 - len(newAdminPassw))}#
+        #                                                                           #
+        #############################################################################
+          """ 
+          + Style.RESET_ALL)
+    print(Fore.YELLOW + f"[+] All BloodHound dockers are still running. You can now manually shutdown them if you wish." + Style.RESET_ALL)

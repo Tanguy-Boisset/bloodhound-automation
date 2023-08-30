@@ -1,1 +1,3 @@
 *.zip
+/bloodhound.config.json
+/docker-compose.yml
