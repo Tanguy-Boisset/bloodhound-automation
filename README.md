@@ -17,3 +17,8 @@ options:
 You can edit the docker file in the template folder for more customization.
 
 By default, it starts three containers. When the script is done, you can shutdown both the web and the postgresql containers if you only wish to keep the neo4j one.
+
+
+## Requirements
+
+You need docker and docker-compose installed.
