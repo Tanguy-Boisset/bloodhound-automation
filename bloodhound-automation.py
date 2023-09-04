@@ -6,9 +6,16 @@ import zipfile
 import shutil
 import time
 import json
+import re
 
 from colorama import Fore, Back, Style
 
+
+def isValidPassword(password):
+    # Check if the password respects the BH criteria
+    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*]).{12,}$'
+
+    return bool(re.match(pattern, password))
 
 def checkDirWritable():
     directory_path = "/var/lib/postgresql/data"
@@ -100,7 +107,7 @@ def uploadJSON(jwt, json_files):
     # Reset password (needed for file upload)
     passwData = {
         "needs_password_reset": False,
-        "secret": "Chien2Sang<3"
+        "secret": args.password
     }
 
     print(Fore.YELLOW + "[*] Starting json upload..." + Style.RESET_ALL)
@@ -140,7 +147,13 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Automatically deploy a bloodhound instance and populate it with the SharpHound data")
     parser.add_argument('-p', '--port', type=int, required=True, help="The custom port for the neo4j container")
     parser.add_argument('-z', '--zip', type=str, required=True, help="The zip file from SharpHound containing the json extracts")
+    parser.add_argument('-P', '--password', type=str, required=False, default="Chien2Sang<3", help="Custom password for the web interface (12 chars min. & all types of characters)")
     args = parser.parse_args()
+
+    if not isValidPassword(args.password):
+        print(Fore.RED + f"[-] The chosen password '{args.password}' does not respect the complexity criteria\nYour password must be at least 12 characters long and must contain every type of characters (lowercase, uppercase, digit and special characters)" + Style.RESET_ALL)
+        print('Exiting...')
+        exit(1)
 
     # Check if /var/lib/postgresql/data is writable
     # If not, the docker command will crash
@@ -187,6 +200,8 @@ if __name__=="__main__":
         #              Your neo4j instance was successfully populated               #
         #                        and is now accessible on :                         #
         #                             localhost:{args.port}{" " * (36 - len(str(args.port)))}#
+        #                             username : neo4j                              #
+        #                             password : neo5j                              # 
         #                                                                           #
         #                 The BloodHound Web GUI is accessible at :                 #
         #                         http://localhost:8080                             #
