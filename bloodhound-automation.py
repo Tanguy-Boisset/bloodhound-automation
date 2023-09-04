@@ -198,7 +198,7 @@ if __name__=="__main__":
         #############################################################################
         #                                                                           #
         #              Your neo4j instance was successfully populated               #
-        #                        and is now accessible on :                         #
+        #                        and is now accessible at :                         #
         #                             localhost:{args.port}{" " * (36 - len(str(args.port)))}#
         #                             username : neo4j                              #
         #                             password : neo5j                              # 
