@@ -13,7 +13,7 @@ from colorama import Fore, Back, Style
 
 def isValidPassword(password):
     # Check if the password respects the BH criteria
-    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*]).{12,}$'
+    pattern = r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!?:\-+,;.@#$%^&*<>]).{12,}$'
 
     return bool(re.match(pattern, password))
 
