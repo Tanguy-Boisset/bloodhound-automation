@@ -37,11 +37,11 @@ def checkDirWritable():
 def dockerSetup():
     with open("./templates/docker-compose.yml", "r") as ifile:
         with open("./docker-compose.yml", "w") as ofile:
-            ofile.write(ifile.read().replace("7687:", str(args.port) + ":"))
+            ofile.write(ifile.read().replace("7687", str(args.neo4j_port)).replace("8080", str(args.web_port)))
     
     with open("./templates/bloodhound.config.json", "r") as ifile:
         with open("./bloodhound.config.json", "w") as ofile:
-            ofile.write(ifile.read())
+            ofile.write(ifile.read().replace("8080", str(args.web_port)))
 
 
 def getAdminPassword():
@@ -60,7 +60,7 @@ def getAdminPassword():
 
 
 def getJWT(adminPassword):
-    url = "http://localhost:8080/api/v2/login"
+    url = f"http://localhost:{args.web_port}/api/v2/login"
     data_to_send = {
         "login_method": "secret",
         "secret": adminPassword,
@@ -97,7 +97,7 @@ def extractZip():
 
 
 def uploadJSON(jwt, json_files):
-    base_url = "http://localhost:8080"
+    base_url = f"http://localhost:{args.web_port}"
     headers = {
                 "User-Agent": "bh-automation",
                 "Authorization": f"Bearer {jwt}",
@@ -145,7 +145,8 @@ def uploadJSON(jwt, json_files):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Automatically deploy a bloodhound instance and populate it with the SharpHound data")
-    parser.add_argument('-p', '--port', type=int, required=True, help="The custom port for the neo4j container")
+    parser.add_argument('-np', '--neo4j-port', type=int, required=True, help="The custom port for the neo4j container")
+    parser.add_argument('-wp', '--web-port', type=int, required=False, default=8080, help="The custom port for the web container (default: 8080)")
     parser.add_argument('-z', '--zip', type=str, required=True, help="The zip file from SharpHound containing the json extracts")
     parser.add_argument('-P', '--password', type=str, required=False, default="Chien2Sang<3", help="Custom password for the web interface (12 chars min. & all types of characters)")
     args = parser.parse_args()
@@ -199,12 +200,12 @@ if __name__=="__main__":
         #                                                                           #
         #              Your neo4j instance was successfully populated               #
         #                        and is now accessible at :                         #
-        #                             localhost:{args.port}{" " * (36 - len(str(args.port)))}#
+        #                             localhost:{args.neo4j_port}{" " * (36 - len(str(args.neo4j_port)))}#
         #                             username : neo4j                              #
         #                             password : neo5j                              # 
         #                                                                           #
         #                 The BloodHound Web GUI is accessible at :                 #
-        #                         http://localhost:8080                             #
+        #                         http://localhost:{args.web_port}                             #
         #                     with the following credentials :                      #
         #                         username : admin                                  #
         #                         password : {newAdminPassw}{" " * (39 - len(newAdminPassw))}#
