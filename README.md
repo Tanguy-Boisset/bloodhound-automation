@@ -4,13 +4,16 @@ Only works on Linux (tested on Ubuntu 22.04).
 
 ## How to run
 ```
-usage: bloodhound-automation.py [-h] -p PORT -z ZIP [-P PASSWORD]
+usage: test.py [-h] -np NEO4J_PORT [-wp WEB_PORT] -z ZIP [-P PASSWORD]
 
 Automatically deploy a bloodhound instance and populate it with the SharpHound data
 
 options:
   -h, --help            show this help message and exit
-  -p PORT, --port PORT  The custom port for the neo4j container
+  -np NEO4J_PORT, --neo4j-port NEO4J_PORT
+                        The custom port for the neo4j container
+  -wp WEB_PORT, --web-port WEB_PORT
+                        The custom port for the web container (default: 8080)
   -z ZIP, --zip ZIP     The zip file from SharpHound containing the json extracts
   -P PASSWORD, --password PASSWORD
                         Custom password for the web interface (12 chars min. & all types of characters)
