@@ -49,7 +49,7 @@ class Project:
         """
         with open("./templates/docker-compose.yml", "r") as ifile:
             with open(self.source_directory / self.name / "docker-compose.yml", "w") as ofile:
-                ofile.write(ifile.read().replace("7687", str(self.ports["neo4j"])).replace("8080", str(self.ports["web"])))
+                ofile.write(ifile.read().replace("7687:", str(self.ports["bolt"])+":").replace("7474:", str(self.ports["neo4j"])+":").replace("8080", str(self.ports["web"])))
         
         with open("./templates/bloodhound.config.json", "r") as ifile:
             with open(self.source_directory / self.name / "bloodhound.config.json", "w") as ofile:
@@ -62,7 +62,7 @@ class Project:
         """
         start_time = time.time()
         while True:
-            with open("/tmp/bh-auto-log.txt", "r") as logfile:
+            with open(self.source_directory / self.name / "logs.txt", "r") as logfile:
                 log = logfile.read()
                 if "Initial Password Set To" in log:
                     start_index = log.find("Initial Password Set To:") + len("Initial Password Set To:")
@@ -162,11 +162,11 @@ class Project:
         self.dockerSetup()
         print(Fore.GREEN + "[+] Docker setup done" + Style.RESET_ALL)
         print(Fore.YELLOW + "[*] Launching BloodHound..." + Style.RESET_ALL)
-        print("The docker log are accessible in the /tmp/bh-auto-log.txt file")
+        print(f"The docker log are accessible in the {self.source_directory / self.name / 'logs.txt'} file")
 
         # Run docker-compose
         try:
-            with open("/tmp/bh-auto-log.txt", "w") as output_log:
+            with open(self.source_directory / self.name / "logs.txt", "w") as output_log:
                 docker_process = subprocess.Popen(
                     ["docker-compose", "up"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
                     )
@@ -181,7 +181,7 @@ class Project:
 
         # Wait for the web server to be ready
         while True:
-            with open("/tmp/bh-auto-log.txt", "r") as logfile:
+            with open(self.source_directory / self.name / "logs.txt", "r") as logfile:
                 log = logfile.read()
                 if "Server started successfully" in log:
                     print(Fore.GREEN + "[+] Web server launched successfully" + Style.RESET_ALL)
@@ -203,7 +203,7 @@ class Project:
         #                                                                           #
         #              Your neo4j instance was successfully populated               #
         #                        and is now accessible at :                         #
-        #                             localhost:{self.ports["neo4j"]}{" " * (36 - len(str(self.ports["neo4j"])))}#
+        #                             localhost:{self.ports["bolt"]}{" " * (36 - len(str(self.ports["bolt"])))}#
         #                             username : neo4j                              #
         #                             password : neo5j                              # 
         #                                                                           #
@@ -225,7 +225,7 @@ class Project:
         """
         Extract the zip file into a temporary directory
         """
-        extract_directory = "/tmp/bh-automation-json"
+        extract_directory = self.source_directory / self.name / ".json_tmp_storage"
 
         # Remove the existing directory if it exists
         if os.path.exists(extract_directory):
@@ -239,7 +239,7 @@ class Project:
             zip_ref.extractall(extract_directory)
         
         file_list = os.listdir(extract_directory)
-        json_files = [extract_directory + "/" + file for file in file_list if file.endswith(".json")]
+        json_files = [extract_directory / file for file in file_list if file.endswith(".json")]
 
         return json_files
 
@@ -266,7 +266,7 @@ class Project:
             with open(file, "r", encoding="utf-8-sig") as f:
                 data = f.read().encode("utf-8")
                 request2 = requests.post(self.base_url + f"/api/v2/file-upload/{uploadId}", headers=headers, data=data)
-                print(Fore.GREEN + f"   [+] Successfully uploaded {file.split('/')[-1]}" + Style.RESET_ALL)
+                print(Fore.GREEN + f"   [+] Successfully uploaded {file.name}" + Style.RESET_ALL)
         
         request3 = requests.post(self.base_url + f"/api/v2/file-upload/{uploadId}/end", headers=headers)
 

@@ -17,8 +17,9 @@ if __name__=="__main__":
     # Start
     parser_start = subparsers.add_parser('start', help="Create a new project or start an existing one")
     parser_start.add_argument('project', type=str, help="")
-    parser_start.add_argument('-np', '--neo4j-port', type=int, required=True, help="The custom port for the neo4j container")
-    parser_start.add_argument('-wp', '--web-port', type=int, required=False, default=8080, help="The custom port for the web container (default: 8080)")
+    parser_start.add_argument('-bp', '--bolt-port', type=int, required=False, default=7687, help="The custom port for the bolt connection")
+    parser_start.add_argument('-np', '--neo4j-port', type=int, required=False, default=7474, help="The custom port for the neo4j connection")
+    parser_start.add_argument('-wp', '--web-port', type=int, required=False, default=8080, help="The custom port for the web app (default: 8080)")
     parser_start.add_argument('-p', '--password', type=str, required=False, default="Chien2Sang<3", help="Custom password for the web interface (12 chars min. & all types of characters)")
     
     # Data
@@ -39,7 +40,7 @@ if __name__=="__main__":
     if args.subparser == "start":
         project = Project(name = args.project,
                           source_directory = PROJECT_DIR,
-                          ports = {"neo4j": args.neo4j_port, "web": args.web_port},
+                          ports = {"neo4j": args.neo4j_port, "bolt": args.bolt_port, "web": args.web_port},
                           password = args.password)
         project.start()
         

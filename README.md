@@ -25,13 +25,13 @@ By default, it starts three containers. When the script is done, you can shutdow
 
 ### Create and start project
 ```
-$ python3 bloodhound-automation.py start -np 10501 -wp 8001 my_project
+$ python3 bloodhound-automation.py start -bp 10001 -np 10501 -wp 8001 my_project
 
 [*] Created ***/bloodhound-automation/projects directory
 [*] Created my_project directory
 [+] Docker setup done
 [*] Launching BloodHound...
-The docker log are accessible in the /tmp/bh-auto-log.txt file
+The docker log are accessible in the */bloodhound-automation/projects/my_project/logs.txt file
 [+] Found admin temporary password : Hq2gYOOGgcRDfqk9xutVoU7LAQ4O0W2x
 [+] Web server launched successfully
 [+] Found JWT token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDA4NzM3NTcsImp0aSI6IjEiLCJpYXQiOjE3MDA4NDQ5NTcsInN1YiI6IjZiM2JmMDc2LTE0YmEtNDE5Mi05OTNkLTQ4ZjBmMDljMDI3MyJ9.jwD8mGxAPIExOP_Xd1S1fWou85N2KqRGpXduH6AIWcc
@@ -42,7 +42,7 @@ The docker log are accessible in the /tmp/bh-auto-log.txt file
         #                                                                           #
         #              Your neo4j instance was successfully populated               #
         #                        and is now accessible at :                         #
-        #                             localhost:10501                               #
+        #                             localhost:10001                               #
         #                             username : neo4j                              #
         #                             password : neo5j                              # 
         #                                                                           #
