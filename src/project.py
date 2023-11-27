@@ -6,6 +6,7 @@ import shutil
 import time
 import json
 import re
+import pickle
 
 from pathlib import Path
 from colorama import Fore, Back, Style
@@ -21,6 +22,9 @@ class Project:
         self.source_directory = source_directory
         self.ports = ports
         self.password = password
+        self.base_url = f"http://localhost:{self.ports['web']}"
+        self.user_ID = ""
+        self.jwt = ""
 
 
     def isValidPassword(self) -> bool:
@@ -52,7 +56,93 @@ class Project:
                 ofile.write(ifile.read().replace("8080", str(self.ports["web"])))
 
 
+    def getAdminPassword(self) -> str:
+        """
+        Find and return the random temporary admin password
+        """
+        start_time = time.time()
+        while True:
+            with open("/tmp/bh-auto-log.txt", "r") as logfile:
+                log = logfile.read()
+                if "Initial Password Set To" in log:
+                    start_index = log.find("Initial Password Set To:") + len("Initial Password Set To:")
+                    end_index = log.find('#"}', start_index)
+                    adminPassword = log[start_index:end_index].strip()
+                    return adminPassword
+                if time.time() - start_time > 90:
+                    print(Fore.RED + "[-] Timeout : a problem occured, check the logs for more information" + Style.RESET_ALL)
+                    exit(1)
+
+
+    def refreshJWT(self, adminPassword: str) -> None:
+        """
+        Get the JWT token required for actions
+        """
+        url = self.base_url + "/api/v2/login"
+        data_to_send = {
+            "login_method": "secret",
+            "secret": adminPassword,
+            "username": "admin"
+        }
+        response = requests.post(url, json=data_to_send)
+        if response.status_code == 200:
+            response_json = response.json()
+            self.jwt = response_json["data"]["session_token"]
+            return
+        else:
+            print(Fore.RED + f"[-] Login request was not successful. Could not extract JWT. Status code : {response.status_code}\n{response.text}" + Style.RESET_ALL)
+            return
+
+
+    def getUserID(self) -> None:
+        """
+        Get the user ID of the admin account
+        """
+        headers = {
+                    "User-Agent": "bh-automation",
+                    "Authorization": f"Bearer {self.jwt}"
+                }
+
+        request0 = requests.get(self.base_url + f"/api/v2/self", headers=headers)
+        self.user_ID = request0.json()["data"]["id"]
+
+        print(Fore.GREEN + f"[+] UserID found : {self.user_ID}" + Style.RESET_ALL)
+        return
+
+
+    def resetPassword(self) -> None:
+        """
+        Reset the admin's password
+        """
+        headers = {
+                    "User-Agent": "bh-automation",
+                    "Authorization": f"Bearer {self.jwt}",
+                    "Content-Type": "application/json",
+                }
+
+        passwData = {
+            "needs_password_reset": False,
+            "secret": self.password
+        }
+
+        request0 = requests.put(self.base_url + f"/api/v2/bloodhound-users/{self.user_ID}/secret", headers=headers, data=json.dumps(passwData))
+        
+        print(Fore.GREEN + f"[+] Changed admin password to : {self.password}" + Style.RESET_ALL)
+        return
+
+
+    def save(self) -> None:
+        """
+        Save the project object in a pickle dump
+        """
+        with open(self.source_directory / self.name / "project.pkl", "wb") as pkl_file:
+            pickle.dump(self, pkl_file)
+
+
     def start(self) -> None:
+        """
+        Start the project and do initial tasks
+        """
         # Check that the password respects the complexity criteria of BH
         if not self.isValidPassword():
             print(Fore.RED + f"[-] The chosen password '{self.password}' does not respect the complexity criteria\nYour password must be at least 12 characters long and must contain every type of characters (lowercase, uppercase, digit and special characters)" + Style.RESET_ALL)
@@ -84,44 +174,51 @@ class Project:
             print(Fore.RED + f"An error occurred: {e}")
             print(Style.RESET_ALL + 'Exiting...')
             exit(1)
+        
+        # Get the default admin password
+        adminPassword = self.getAdminPassword()
+        print(Fore.GREEN + f"[+] Found admin temporary password : {adminPassword}" + Style.RESET_ALL)
 
-
-    def getAdminPassword(self) -> str:
-        """
-        Find and return the random temporary admin password
-        """
-        start_time = time.time()
+        # Wait for the web server to be ready
         while True:
             with open("/tmp/bh-auto-log.txt", "r") as logfile:
                 log = logfile.read()
-                if "Initial Password Set To" in log:
-                    start_index = log.find("Initial Password Set To:") + len("Initial Password Set To:")
-                    end_index = log.find('#"}', start_index)
-                    adminPassword = log[start_index:end_index].strip()
-                    return adminPassword
-                if time.time() - start_time > 90:
-                    print(Fore.RED + "[-] Timeout : a problem occured, check the logs for more information" + Style.RESET_ALL)
-                    exit(1)
+                if "Server started successfully" in log:
+                    print(Fore.GREEN + "[+] Web server launched successfully" + Style.RESET_ALL)
+                    break
+        
+        # Get the JWT token of the admin
+        self.refreshJWT(adminPassword)
+        print(Fore.GREEN + f"[+] Found JWT token : {self.jwt}" + Style.RESET_ALL)
 
+        # Find user ID
+        self.getUserID()
 
-    def getJWT(self, adminPassword: str) -> str:
-        """
-        Get the JWT token required for actions
-        """
-        url = f"http://localhost:{self.ports['web']}/api/v2/login"
-        data_to_send = {
-            "login_method": "secret",
-            "secret": adminPassword,
-            "username": "admin"
-        }
-        response = requests.post(url, json=data_to_send)
-        if response.status_code == 200:
-            response_json = response.json()
-            jwt = response_json["data"]["session_token"]
-            return jwt
-        else:
-            print(Fore.RED + f"[-] Login request was not successful. Status code : {response.status_code}\n{response.text}" + Style.RESET_ALL)
-            exit(1)
+        # Reset the admin password
+        self.resetPassword()
+
+        print(Fore.GREEN + 
+          f"""
+        #############################################################################
+        #                                                                           #
+        #              Your neo4j instance was successfully populated               #
+        #                        and is now accessible at :                         #
+        #                             localhost:{self.ports["neo4j"]}{" " * (36 - len(str(self.ports["neo4j"])))}#
+        #                             username : neo4j                              #
+        #                             password : neo5j                              # 
+        #                                                                           #
+        #                 The BloodHound Web GUI is accessible at :                 #
+        #                         http://localhost:{self.ports["web"]}                             #
+        #                     with the following credentials :                      #
+        #                         username : admin                                  #
+        #                         password : {self.password}{" " * (39 - len(self.password))}#
+        #                                                                           #
+        #############################################################################
+          """ 
+          + Style.RESET_ALL)
+        
+        self.save()
+        return
 
 
     def extractZip(self, zip_file: str) -> list[str]:
@@ -147,51 +244,39 @@ class Project:
         return json_files
 
 
-    def uploadJSON(self, jwt: str, json_files: list[str]):
+    def uploadJSON(self, json_files: list[str]):
         """
         Upload json files into BH
         """
-        base_url = f"http://localhost:{self.ports['web']}"
+        self.refreshJWT(self.password)
+        print(Fore.GREEN + f"[+] Refreshed JWT token : {self.jwt}" + Style.RESET_ALL)
+
         headers = {
                     "User-Agent": "bh-automation",
-                    "Authorization": f"Bearer {jwt}",
+                    "Authorization": f"Bearer {self.jwt}",
                     "Content-Type": "application/json",
                 }
-
-        # Reset password (needed for file upload)
-        passwData = {
-            "needs_password_reset": False,
-            "secret": self.password
-        }
-
         print(Fore.YELLOW + "[*] Starting json upload..." + Style.RESET_ALL)
-        request0 = requests.get(base_url + f"/api/v2/self", headers=headers)
-        
-        userId = request0.json()["data"]["id"]
-        print(Fore.GREEN + f"   [+] UserID found : {userId}" + Style.RESET_ALL)
 
-        request0 = requests.put(base_url + f"/api/v2/bloodhound-users/{userId}/secret", headers=headers, data=json.dumps(passwData))
-        print(Fore.GREEN + f"   [+] Changed admin password to : {passwData['secret']}" + Style.RESET_ALL)
-
-        request1 = requests.post(base_url + "/api/v2/file-upload/start", headers=headers)
+        request1 = requests.post(self.base_url + "/api/v2/file-upload/start", headers=headers)
         uploadId = request1.json()["data"]["id"]
         print(Fore.GREEN + f"   [+] Started new upload batch, id : {uploadId}" + Style.RESET_ALL)
 
         for file in json_files:
             with open(file, "r", encoding="utf-8-sig") as f:
                 data = f.read().encode("utf-8")
-                request2 = requests.post(base_url + f"/api/v2/file-upload/{uploadId}", headers=headers, data=data)
+                request2 = requests.post(self.base_url + f"/api/v2/file-upload/{uploadId}", headers=headers, data=data)
                 print(Fore.GREEN + f"   [+] Successfully uploaded {file.split('/')[-1]}" + Style.RESET_ALL)
         
-        request3 = requests.post(base_url + f"/api/v2/file-upload/{uploadId}/end", headers=headers)
+        request3 = requests.post(self.base_url + f"/api/v2/file-upload/{uploadId}/end", headers=headers)
 
         print(Fore.YELLOW + f"   [*] Waiting for BloodHound to ingest the data. This could take a few minutes." + Style.RESET_ALL)
         while True:
-            ingest = requests.get(base_url + f"/api/v2/file-upload?skip=0&limit=10&sort_by=-id", headers=headers)
+            ingest = requests.get(self.base_url + f"/api/v2/file-upload?skip=0&limit=10&sort_by=-id", headers=headers)
             status = ingest.json()["data"][0]
 
             if status["id"] == uploadId and status["status_message"] == "Complete":
                 print(Fore.GREEN + f"[+] The JSON upload was successful" + Style.RESET_ALL)
-                return passwData['secret']
+                return
             else:
                 time.sleep(5)

@@ -1,4 +1,5 @@
 import argparse
+import pickle
 
 from pathlib import Path
 
@@ -18,9 +19,13 @@ if __name__=="__main__":
     parser_start.add_argument('project', type=str, help="")
     parser_start.add_argument('-np', '--neo4j-port', type=int, required=True, help="The custom port for the neo4j container")
     parser_start.add_argument('-wp', '--web-port', type=int, required=False, default=8080, help="The custom port for the web container (default: 8080)")
-    parser_start.add_argument('-z', '--zip', type=str, required=True, help="The zip file from SharpHound containing the json extracts")
-    parser_start.add_argument('-P', '--password', type=str, required=False, default="Chien2Sang<3", help="Custom password for the web interface (12 chars min. & all types of characters)")
+    parser_start.add_argument('-p', '--password', type=str, required=False, default="Chien2Sang<3", help="Custom password for the web interface (12 chars min. & all types of characters)")
     
+    # Data
+    parser_data = subparsers.add_parser('data', help="Feed data into an existing project")
+    parser_data.add_argument('project', type=str, help="")
+    parser_data.add_argument('-z', '--zip', type=str, required=True, help="The zip file from SharpHound containing the json extracts")
+
     # Stop
     parser_stop = subparsers.add_parser('stop', help="Stop a running project")
 
@@ -36,13 +41,11 @@ if __name__=="__main__":
                           source_directory = PROJECT_DIR,
                           ports = {"neo4j": args.neo4j_port, "web": args.web_port},
                           password = args.password)
-        
         project.start()
-
-        # TEMP
-        admPass = project.getAdminPassword()
-        jwt = project.getJWT(admPass)
+        
+    if args.subparser == "data":
+        with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pikl_file:
+            project = pickle.load(pikl_file)
         jsons = project.extractZip(args.zip)
-
-        project.uploadJSON(jwt, jsons)
+        project.uploadJSON(jsons)
 
