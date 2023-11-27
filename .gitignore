@@ -1,3 +1,8 @@
 *.zip
+
+*/__pycache__
+
+projects
+
 /bloodhound.config.json
 /docker-compose.yml

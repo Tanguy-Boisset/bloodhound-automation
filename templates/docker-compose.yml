@@ -25,8 +25,8 @@ services:
     # Database ports are disabled by default. Please change your database password to something secure before uncommenting
     # ports:
     #   - ${POSTGRES_PORT:-5432}:5432
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+    #volumes:
+    #  - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test:
         [
