@@ -4,19 +4,21 @@ Only works on Linux (tested on Ubuntu 22.04).
 
 ## How to run
 ```
-usage: test.py [-h] -np NEO4J_PORT [-wp WEB_PORT] -z ZIP [-P PASSWORD]
+usage: bloodhound-automation.py [-h] {list,start,data,stop,delete} ...
 
 Automatically deploy a bloodhound instance and populate it with the SharpHound data
 
+positional arguments:
+  {list,start,data,stop,delete}
+                        Action to run
+    list                List existing projects
+    start               Create a new project or start an existing one
+    data                Feed data into an existing project
+    stop                Stop a running project (WIP)
+    delete              Delete a project (WIP)
+
 options:
   -h, --help            show this help message and exit
-  -np NEO4J_PORT, --neo4j-port NEO4J_PORT
-                        The custom port for the neo4j container
-  -wp WEB_PORT, --web-port WEB_PORT
-                        The custom port for the web container (default: 8080)
-  -z ZIP, --zip ZIP     The zip file from SharpHound containing the json extracts
-  -P PASSWORD, --password PASSWORD
-                        Custom password for the web interface (12 chars min. & all types of characters)
 ```
 
 You can edit the docker file in the template folder for more customization.
