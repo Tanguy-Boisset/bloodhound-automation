@@ -11,6 +11,8 @@ import pickle
 from pathlib import Path
 from colorama import Fore, Back, Style
 
+from typing import List
+
 import src.utils as utils
 
 class Project:
@@ -224,7 +226,7 @@ class Project:
         return
 
 
-    def extractZip(self, zip_file: str) -> list[str]:
+    def extractZip(self, zip_file: str) -> List[str]:
         """
         Extract the zip file into a temporary directory
         """
@@ -247,7 +249,7 @@ class Project:
         return json_files
 
 
-    def uploadJSON(self, json_files: list[str]):
+    def uploadJSON(self, json_files: List[str]):
         """
         Upload json files into BH
         """
