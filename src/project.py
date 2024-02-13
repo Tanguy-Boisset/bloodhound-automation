@@ -294,3 +294,25 @@ class Project:
                 return
             else:
                 time.sleep(5)
+    
+
+    def delete(self) -> None:
+        """
+        Delete the containers and network interface
+        """
+        print(Fore.YELLOW + f"[*] Deleting {self.name} project..." + Style.RESET_ALL)
+        # Run docker-compose
+        try:
+            with open(self.source_directory / self.name / "logs.txt", "a") as output_log:
+                docker_process = subprocess.Popen(
+                    ["docker-compose", "down"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
+                    )
+        except subprocess.CalledProcessError as e:
+            print(Fore.RED + f"An error occurred: {e}")
+            print(Style.RESET_ALL + 'Exiting...')
+            exit(1)
+        # Wait for a bit
+        time.sleep(10)
+        # Delete project's folder
+        shutil.rmtree(self.source_directory / self.name)
+        print(Fore.GREEN + f"[+] The project {self.name} has been successfuly deleted" + Style.RESET_ALL)
