@@ -16,7 +16,7 @@ from typing import List
 import src.utils as utils
 
 class Project:
-    def __init__(self, name: str, source_directory: Path, ports: dict, password: str):
+    def __init__(self, name: str, source_directory: Path, ports: dict, password: str, timeout: int, no_gds: bool):
         """
         Represents a project
         """
@@ -27,6 +27,8 @@ class Project:
         self.base_url = f"http://localhost:{self.ports['web']}"
         self.user_ID = ""
         self.jwt = ""
+        self.timeout = timeout
+        self.no_gds = no_gds
 
 
     def isValidPassword(self) -> bool:
@@ -51,11 +53,18 @@ class Project:
         """
         with open("./templates/docker-compose.yml", "r") as ifile:
             with open(self.source_directory / self.name / "docker-compose.yml", "w") as ofile:
-                ofile.write(ifile.read().replace("7687:", str(self.ports["bolt"])+":").replace("7474:", str(self.ports["neo4j"])+":").replace("8080", str(self.ports["web"])))
+                tmp_file = (ifile.read()
+                            .replace("7687:", str(self.ports["bolt"])+":")
+                            .replace("7474:", str(self.ports["neo4j"])+":")
+                            .replace("8080", str(self.ports["web"])))
+                if self.no_gds:
+                    tmp_file = tmp_file.replace('- NEO4J_PLUGINS=["graph-data-science"]', '')
+                ofile.write(tmp_file)
         
         with open("./templates/bloodhound.config.json", "r") as ifile:
             with open(self.source_directory / self.name / "bloodhound.config.json", "w") as ofile:
-                ofile.write(ifile.read().replace("8080", str(self.ports["web"])))
+                ofile.write(ifile.read()
+                            .replace("8080", str(self.ports["web"])))
 
 
     def getAdminPassword(self) -> str:
@@ -71,7 +80,7 @@ class Project:
                     end_index = log.find('#"}', start_index)
                     adminPassword = log[start_index:end_index].strip()
                     return adminPassword
-                if time.time() - start_time > 90:
+                if time.time() - start_time > self.timeout:
                     print(Fore.RED + "[-] Timeout : a problem occured, check the logs for more information" + Style.RESET_ALL)
                     exit(1)
 

@@ -18,10 +18,12 @@ if __name__=="__main__":
     # Start
     parser_start = subparsers.add_parser('start', help="Create a new project or start an existing one")
     parser_start.add_argument('project', type=str, help="The project name")
-    parser_start.add_argument('-bp', '--bolt-port', type=int, required=False, default=7687, help="The custom port for the bolt connection")
-    parser_start.add_argument('-np', '--neo4j-port', type=int, required=False, default=7474, help="The custom port for the neo4j connection")
+    parser_start.add_argument('-bp', '--bolt-port', type=int, required=False, default=7687, help="The custom port for the bolt connection (default: 7687)")
+    parser_start.add_argument('-np', '--neo4j-port', type=int, required=False, default=7474, help="The custom port for the neo4j connection (default: 7474)")
     parser_start.add_argument('-wp', '--web-port', type=int, required=False, default=8080, help="The custom port for the web app (default: 8080)")
     parser_start.add_argument('-p', '--password', type=str, required=False, default="Chien2Sang<3", help="Custom password for the web interface (12 chars min. & all types of characters)")
+    parser_start.add_argument('-t', '--timeout', type=int, required=False, default=180, help="The timeout delay while loading the container. Increase in case of low bandwidth (default: 180)")
+    parser_start.add_argument('--no-gds', action="store_true", help="Create neo4j container without GDS plugin")
     
     # Data
     parser_data = subparsers.add_parser('data', help="Feed data into an existing project")
@@ -56,6 +58,7 @@ if __name__=="__main__":
             print(Fore.YELLOW + f"   * neo4j port: {project.ports['neo4j']}" + Style.RESET_ALL)
             print(Fore.YELLOW + f"   * web port: {project.ports['web']}" + Style.RESET_ALL)
             print(Fore.YELLOW + f"   * password: {project.password}" + Style.RESET_ALL)
+            print(Fore.YELLOW + f"   * GDS plugin: {'False' if project.no_gds else 'True'}" + Style.RESET_ALL)
             c += 1
         
 
@@ -63,7 +66,9 @@ if __name__=="__main__":
         project = Project(name = args.project,
                           source_directory = PROJECT_DIR,
                           ports = {"neo4j": args.neo4j_port, "bolt": args.bolt_port, "web": args.web_port},
-                          password = args.password)
+                          password = args.password,
+                          timeout = args.timeout,
+                          no_gds = args.no_gds)
         project.start()
         
     if args.subparser == "data":
