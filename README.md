@@ -14,8 +14,8 @@ positional arguments:
     list                List existing projects
     start               Create a new project or start an existing one
     data                Feed data into an existing project
-    stop                Stop a running project (WIP)
-    delete              Delete a project (WIP)
+    stop                Stop a running project (Not implemented yet)
+    delete              Delete a project
 
 options:
   -h, --help            show this help message and exit
