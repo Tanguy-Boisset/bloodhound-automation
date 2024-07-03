@@ -121,7 +121,7 @@ class Project:
         return
 
 
-    def resetPassword(self) -> None:
+    def resetPassword(self, adminPassword: str) -> None:
         """
         Reset the admin's password
         """
@@ -132,6 +132,7 @@ class Project:
                 }
 
         passwData = {
+            "current_secret": adminPassword,
             "needs_password_reset": False,
             "secret": self.password
         }
@@ -209,7 +210,7 @@ class Project:
         self.getUserID()
 
         # Reset the admin password
-        self.resetPassword()
+        self.resetPassword(adminPassword)
 
         print(Fore.GREEN + 
           f"""
