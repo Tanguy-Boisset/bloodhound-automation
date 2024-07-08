@@ -1,0 +1,8 @@
+ansible-core==2.12.0
+docker==5.0.3
+docker-compose==1.29.2
+dockerpty==0.4.1
+requests==2.25.1
+urllib3==1.26.5
+PyYaml==5.3.1
+colorama
