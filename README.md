@@ -83,3 +83,20 @@ $ python3 bloodhound-automation.py data -z test.zip my_project
 ## Requirements
 
 You need docker and docker-compose installed.
+
+## Dependencies
+
+Configure a virtualenv to ensure compatibility between packages.
+
+```
+virtualenv venv
+```
+```
+source venv/bin/activate
+```
+```
+pip3 install --upgrade pip
+```
+```
+pip3 install -r requirements.txt
+```
