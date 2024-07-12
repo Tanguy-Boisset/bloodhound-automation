@@ -36,6 +36,10 @@ if __name__=="__main__":
     # Delete
     parser_delete = subparsers.add_parser('delete', help="Delete a project")
     parser_delete.add_argument('project', type=str, help="The project name")
+ 
+    # Clear
+    parser_clear = subparsers.add_parser('clear', help="Clear a project")
+    parser_clear.add_argument('project', type=str, help="The project name")
 
     args = parser.parse_args()
 
@@ -94,4 +98,14 @@ if __name__=="__main__":
             print(Style.RESET_ALL + 'Exiting...')
             exit(1)
         project.delete()
+    
+    if args.subparser == "clear":
+        try:
+            with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
+                project = pickle.load(pkl_file)
+        except FileNotFoundError:
+            print(Fore.RED + f"The project {args.project} does not exist.")
+            print(Style.RESET_ALL + 'Exiting...')
+            exit(1)
+        project.clear()
 
