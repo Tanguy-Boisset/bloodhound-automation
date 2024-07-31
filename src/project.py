@@ -297,6 +297,29 @@ class Project:
                 time.sleep(5)
     
 
+    def clear(self) -> None:
+        """
+        Clear the Neo4j database via BloodHound API
+        """
+        self.refreshJWT(self.password)
+        url = f"http://localhost:{self.ports['web']}/api/v2/clear-database"
+        headers = {
+            "User-Agent": "bh-automation",
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.jwt}"
+        }
+
+        data = {
+            "deleteCollectedGraphData": True
+        }
+
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 204:
+            print(Fore.GREEN + "[+] Neo4j database cleared successfully. You must wait a few seconds before the changes take effect." + Style.RESET_ALL)
+        else:
+            print(Fore.RED + f"[-] Failed to clear Neo4j database. Status code: {response.status_code}\n{response.text}" + Style.RESET_ALL)
+
+
     def delete(self) -> None:
         """
         Delete the containers and network interface
@@ -317,25 +340,3 @@ class Project:
         # Delete project's folder
         shutil.rmtree(self.source_directory / self.name)
         print(Fore.GREEN + f"[+] The project {self.name} has been successfuly deleted" + Style.RESET_ALL)
-
-    def clear(self) -> None:
-        """
-        Clear the Neo4j database via BloodHound API
-        """
-        self.refreshJWT(self.password)
-        url = f"http://localhost:{self.ports['web']}/api/v2/clear-database"
-        headers = {
-            "User-Agent": "bh-automation",
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.jwt}"
-        }
-
-        data = {
-            "deleteCollectedGraphData": True
-        }
-
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 204:
-            print(Fore.GREEN + "[+] Neo4j database cleared successfully" + Style.RESET_ALL)
-        else:
-            print(Fore.RED + f"[-] Failed to clear Neo4j database. Status code: {response.status_code}\n{response.text}" + Style.RESET_ALL)

@@ -30,16 +30,16 @@ if __name__=="__main__":
     parser_data.add_argument('project', type=str, help="The project name")
     parser_data.add_argument('-z', '--zip', type=str, required=True, help="The zip file from SharpHound containing the json extracts")
 
+    # Clear
+    parser_clear = subparsers.add_parser('clear', help="Clear a project's data")
+    parser_clear.add_argument('project', type=str, help="The project name")
+
     # Stop
     parser_stop = subparsers.add_parser('stop', help="Stop a running project (Not implemented yet)")
 
     # Delete
     parser_delete = subparsers.add_parser('delete', help="Delete a project")
     parser_delete.add_argument('project', type=str, help="The project name")
- 
-    # Clear
-    parser_clear = subparsers.add_parser('clear', help="Clear a project")
-    parser_clear.add_argument('project', type=str, help="The project name")
 
     args = parser.parse_args()
 
@@ -88,17 +88,6 @@ if __name__=="__main__":
         jsons = project.extractZip(args.zip)
         project.uploadJSON(jsons)
     
-
-    if args.subparser == "delete":
-        try:
-            with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
-                project = pickle.load(pkl_file)
-        except FileNotFoundError:
-            print(Fore.RED + f"The project {args.project} does not exist.")
-            print(Style.RESET_ALL + 'Exiting...')
-            exit(1)
-        project.delete()
-    
     if args.subparser == "clear":
         try:
             with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
@@ -109,3 +98,12 @@ if __name__=="__main__":
             exit(1)
         project.clear()
 
+    if args.subparser == "delete":
+        try:
+            with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
+                project = pickle.load(pkl_file)
+        except FileNotFoundError:
+            print(Fore.RED + f"The project {args.project} does not exist.")
+            print(Style.RESET_ALL + 'Exiting...')
+            exit(1)
+        project.delete()

@@ -1,6 +1,6 @@
 # BloodHound automation
 Automatically run and populate a new instance of BH CE.
-Only works on Linux (tested on Ubuntu 22.04). 
+Tested on Ubuntu 22.04 and MacOS. 
 
 ## How to run
 ```
