@@ -97,7 +97,7 @@ $ python3.9 bloodhound-automation.py clear my_project
 
 ## Requirements
 
-You need docker and docker-compose installed.
+You need docker installed.
 
 ## Dependencies
 
