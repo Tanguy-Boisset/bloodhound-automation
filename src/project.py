@@ -180,10 +180,10 @@ class Project:
         try:
             with open(self.source_directory / self.name / "logs.txt", "w") as output_log:
                 docker_pull = subprocess.Popen(
-                    ["docker-compose", "pull"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
+                    ["docker", "compose", "pull"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
                     )
                 docker_process = subprocess.Popen(
-                    ["docker-compose", "up"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
+                    ["docker", "compose", "up"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
                     )
         except subprocess.CalledProcessError as e:
             print(Fore.RED + f"An error occurred: {e}")
@@ -329,7 +329,7 @@ class Project:
         try:
             with open(self.source_directory / self.name / "logs.txt", "a") as output_log:
                 docker_process = subprocess.Popen(
-                    ["docker-compose", "down"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
+                    ["docker", "compose", "down"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
                     )
         except subprocess.CalledProcessError as e:
             print(Fore.RED + f"An error occurred: {e}")
