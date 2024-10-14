@@ -179,11 +179,12 @@ class Project:
         # Run docker-compose
         try:
             with open(self.source_directory / self.name / "logs.txt", "w") as output_log:
+                docker_compose_bin = ["docker-compose"] if shutil.which("docker-compose") else ["docker", "compose"]
                 docker_pull = subprocess.Popen(
-                    ["docker", "compose", "pull"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
+                    [*docker_compose_bin, "pull"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
                     )
                 docker_process = subprocess.Popen(
-                    ["docker", "compose", "up"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
+                    [*docker_compose_bin, "up"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
                     )
         except subprocess.CalledProcessError as e:
             print(Fore.RED + f"An error occurred: {e}")
