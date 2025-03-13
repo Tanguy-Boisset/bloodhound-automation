@@ -151,6 +151,25 @@ class Project:
             pickle.dump(self, pkl_file)
 
 
+    def enableNTLM(self) -> None:
+        """
+        Enable the NTLM Post Processing Support feature (Early Access) via the BloodHound API using a PUT request
+        """
+        self.refreshJWT(self.password)  # Ensure we have a valid JWT token
+        url = f"{self.base_url}/api/v2/features/18/toggle"
+        headers = {
+            "User-Agent": "bh-automation",
+            "Authorization": f"Bearer {self.jwt}",
+            "Accept": "application/json, text/plain, */*",
+        }
+
+        response = requests.put(url, headers=headers)
+        if response.status_code == 200 or response.status_code == 204:
+            print(Fore.GREEN + "[+] NTLM Post Processing Support feature (Early Access) enabled successfully" + Style.RESET_ALL)
+        else:
+            print(Fore.RED + f"[-] Failed to enable NTLM Post Processing Support feature. Status code: {response.status_code}\n{response.text}" + Style.RESET_ALL)
+
+
     def start(self) -> None:
         """
         Start the project and do initial tasks
@@ -212,6 +231,9 @@ class Project:
 
         # Reset the admin password
         self.resetPassword(adminPassword)
+
+        # Enable NTLM feature
+        self.enableNTLM()
 
         print(Fore.GREEN + 
           f"""
