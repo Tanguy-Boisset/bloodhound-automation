@@ -6,3 +6,4 @@ projects
 
 /bloodhound.config.json
 /docker-compose.yml
+.idea/
