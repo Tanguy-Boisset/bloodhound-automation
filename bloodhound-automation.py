@@ -1,6 +1,7 @@
 import argparse
 import pickle
 import os
+import sys
 
 from pathlib import Path
 from colorama import Fore, Back, Style
@@ -26,22 +27,24 @@ if __name__=="__main__":
     parser_start.add_argument('--no-gds', action="store_true", help="Create neo4j container without GDS plugin")
     
     # Data
-    parser_data = subparsers.add_parser('data', help="Feed data into an existing project")
+    parser_data = subparsers.add_parser('data', help="Feed data into the existing project")
     parser_data.add_argument('project', type=str, help="The project name")
     parser_data.add_argument('-z', '--zip', type=str, required=True, help="The zip file from SharpHound containing the json extracts")
 
     # Clear
-    parser_clear = subparsers.add_parser('clear', help="Clear a project's data")
+    parser_clear = subparsers.add_parser('clear', help="Clear the project's data")
     parser_clear.add_argument('project', type=str, help="The project name")
 
     # Stop
-    parser_stop = subparsers.add_parser('stop', help="Stop a running project (Not implemented yet)")
+    parser_stop = subparsers.add_parser('stop', help="Stop the containers of the project")
     parser_stop.add_argument('project', type=str, help="The project name")
 
-
     # Delete
-    parser_delete = subparsers.add_parser('delete', help="Delete a project")
+    parser_delete = subparsers.add_parser('delete', help="Delete the project and its containers")
     parser_delete.add_argument('project', type=str, help="The project name")
+
+    # No arguments
+    parser.parse_args(args=None if sys.argv[1:] else ['--help'])
 
     args = parser.parse_args()
 
@@ -69,7 +72,7 @@ if __name__=="__main__":
             c += 1
         
 
-    if args.subparser == "start":
+    elif args.subparser == "start":
         project = Project(name = args.project,
                           source_directory = PROJECT_DIR,
                           ports = {"neo4j": args.neo4j_port, "bolt": args.bolt_port, "web": args.web_port},
@@ -79,7 +82,7 @@ if __name__=="__main__":
         project.start()
 
 
-    if args.subparser == "data":
+    elif args.subparser == "data":
         try:
             with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
                 project = pickle.load(pkl_file)
@@ -90,7 +93,7 @@ if __name__=="__main__":
         jsons = project.extractZip(args.zip)
         project.uploadJSON(jsons)
     
-    if args.subparser == "clear":
+    elif args.subparser == "clear":
         try:
             with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
                 project = pickle.load(pkl_file)
@@ -100,17 +103,7 @@ if __name__=="__main__":
             exit(1)
         project.clear()
 
-    if args.subparser == "delete":
-        try:
-            with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
-                project = pickle.load(pkl_file)
-        except FileNotFoundError:
-            print(Fore.RED + f"The project {args.project} does not exist.")
-            print(Style.RESET_ALL + 'Exiting...')
-            exit(1)
-        project.delete()
-
-    if args.subparser == "stop":
+    elif args.subparser == "stop":
         try:
             with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
                 project = pickle.load(pkl_file)
@@ -120,3 +113,15 @@ if __name__=="__main__":
             exit(1)
         project.stop()
 
+    elif args.subparser == "delete":
+        try:
+            with open(PROJECT_DIR / args.project / "project.pkl", "rb") as pkl_file:
+                project = pickle.load(pkl_file)
+        except FileNotFoundError:
+            print(Fore.RED + f"The project {args.project} does not exist.")
+            print(Style.RESET_ALL + 'Exiting...')
+            exit(1)
+        project.delete()
+
+    else:
+        pass
