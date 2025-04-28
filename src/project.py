@@ -343,6 +343,25 @@ class Project:
             print(Fore.RED + f"[-] Failed to clear Neo4j database. Status code: {response.status_code}\n{response.text}" + Style.RESET_ALL)
 
 
+    def stop(self) -> None:
+        # Run docker-compose
+        print(Fore.GREEN + f"[+] Stopping project : {self.name}" + Style.RESET_ALL)
+
+        try:
+            with open(self.source_directory / self.name / "logs.txt", "w") as output_log:
+                docker_compose_bin = ["docker-compose"] if shutil.which("docker-compose") else ["docker", "compose"]
+                docker_stop = subprocess.Popen(
+                    [*docker_compose_bin, "stop"], cwd=self.source_directory / self.name, text=True, stdout=output_log,
+                    stderr=output_log
+                )
+                print(Fore.GREEN + f"[+] Done!" + Style.RESET_ALL)
+        except subprocess.CalledProcessError as e:
+            print(Fore.RED + f"An error occurred: {e}")
+            print(Style.RESET_ALL + 'Exiting...')
+            exit(1)
+
+
+
     def delete(self) -> None:
         """
         Delete the containers and network interface
