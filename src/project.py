@@ -222,7 +222,7 @@ class Project:
         # Run docker-compose
         try:
             with open(self.source_directory / self.name / "logs.txt", "w") as output_log:
-                docker_compose_bin = ["docker-compose"] if shutil.which("docker-compose") else ["docker", "compose"]
+                docker_compose_bin = ["docker", "compose"]
                 docker_pull = subprocess.Popen(
                     [*docker_compose_bin, "pull"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
                     )
@@ -376,7 +376,7 @@ class Project:
 
         try:
             with open(self.source_directory / self.name / "logs.txt", "w") as output_log:
-                docker_compose_bin = ["docker-compose"] if shutil.which("docker-compose") else ["docker", "compose"]
+                docker_compose_bin = ["docker", "compose"]
                 docker_stop = subprocess.Popen(
                     [*docker_compose_bin, "stop"], cwd=self.source_directory / self.name, text=True, stdout=output_log,
                     stderr=output_log
@@ -397,7 +397,7 @@ class Project:
         # Run docker-compose
         try:
             with open(self.source_directory / self.name / "logs.txt", "a") as output_log:
-                docker_compose_bin = ["docker-compose"] if shutil.which("docker-compose") else ["docker", "compose"]
+                docker_compose_bin = ["docker", "compose"]
                 docker_process = subprocess.Popen(
                     [*docker_compose_bin, "down"], cwd=self.source_directory / self.name, text=True, stdout=output_log, stderr=output_log
                     )
