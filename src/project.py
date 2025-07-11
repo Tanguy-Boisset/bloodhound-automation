@@ -142,6 +142,26 @@ class Project:
         print(Fore.GREEN + f"[+] Changed admin password to : {self.password}" + Style.RESET_ALL)
         return
 
+    def getApiVersion(self) -> None:
+        """
+        Print the current BHCE server version in green.
+        """
+        headers = {
+            "User-Agent": "bh-automation",
+            "Authorization": f"Bearer {self.jwt}",
+            "Content-Type": "application/json",
+        }
+
+        response = requests.get(self.base_url + "/api/version", headers=headers)
+
+        if response.status_code == 200:
+            json_data = response.json().get("data", {})
+            server_version = json_data.get("server_version", "unknown")
+
+            print(Fore.GREEN + f"[+] You are using BHCE {server_version}" + Style.RESET_ALL)
+        else:
+            print(Fore.RED + f"[-] Failed to get BHCE version: {response.status_code}" + Style.RESET_ALL)
+
 
     def save(self) -> None:
         """
@@ -231,6 +251,9 @@ class Project:
 
         # Reset the admin password
         self.resetPassword(adminPassword)
+
+        # Display BHCE version
+        self.getApiVersion()
 
         # Enable NTLM feature
         self.enableNTLM()
