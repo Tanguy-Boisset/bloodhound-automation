@@ -63,11 +63,12 @@ if __name__=="__main__":
         c = 1
         for project in projects:
             print(Fore.GREEN + f"[{c}] {project.name}" + Style.RESET_ALL)
-            print(Fore.YELLOW + f"   * name: {project.name}" + Style.RESET_ALL)
-            print(Fore.YELLOW + f"   * bolt port: {project.ports['bolt']}" + Style.RESET_ALL)
-            print(Fore.YELLOW + f"   * neo4j port: {project.ports['neo4j']}" + Style.RESET_ALL)
-            print(Fore.YELLOW + f"   * web port: {project.ports['web']}" + Style.RESET_ALL)
-            print(Fore.YELLOW + f"   * password: {project.password}" + Style.RESET_ALL)
+            print(Fore.YELLOW + f"   * Name: {project.name}" + Style.RESET_ALL)
+            print(Fore.YELLOW + f"   * BHCE version: {project.bhce_version}" + Style.RESET_ALL)
+            print(Fore.YELLOW + f"   * Bolt port: {project.ports['bolt']}" + Style.RESET_ALL)
+            print(Fore.YELLOW + f"   * Neo4j port: {project.ports['neo4j']}" + Style.RESET_ALL)
+            print(Fore.YELLOW + f"   * Web port: {project.ports['web']}" + Style.RESET_ALL)
+            print(Fore.YELLOW + f"   * Password: {project.password}" + Style.RESET_ALL)
             print(Fore.YELLOW + f"   * GDS plugin: {'False' if project.no_gds else 'True'}" + Style.RESET_ALL)
             c += 1
         

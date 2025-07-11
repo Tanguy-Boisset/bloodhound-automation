@@ -21,6 +21,7 @@ class Project:
         Represents a project
         """
         self.name = name
+        self.bhce_version = ""
         self.source_directory = source_directory
         self.ports = ports
         self.password = password
@@ -156,11 +157,12 @@ class Project:
 
         if response.status_code == 200:
             json_data = response.json().get("data", {})
-            server_version = json_data.get("server_version", "unknown")
+            self.bhce_version = json_data.get("server_version", "unknown")
 
-            print(Fore.GREEN + f"[+] You are using BHCE {server_version}" + Style.RESET_ALL)
+            print(Fore.GREEN + f"[+] You are using BHCE {self.bhce_version}" + Style.RESET_ALL)
         else:
             print(Fore.RED + f"[-] Failed to get BHCE version: {response.status_code}" + Style.RESET_ALL)
+        return
 
 
     def save(self) -> None:
@@ -169,6 +171,7 @@ class Project:
         """
         with open(self.source_directory / self.name / "project.pkl", "wb") as pkl_file:
             pickle.dump(self, pkl_file)
+        return
 
 
     def enableNTLM(self) -> None:
@@ -188,6 +191,7 @@ class Project:
             print(Fore.GREEN + "[+] NTLM Post Processing Support feature (Early Access) enabled successfully" + Style.RESET_ALL)
         else:
             print(Fore.RED + f"[-] Failed to enable NTLM Post Processing Support feature. Status code: {response.status_code}\n{response.text}" + Style.RESET_ALL)
+        return
 
 
     def start(self) -> None:
