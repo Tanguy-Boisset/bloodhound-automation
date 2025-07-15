@@ -14,7 +14,7 @@ positional arguments:
     list                List existing projects
     start               Create a new project or start an existing one
     data                Feed data into an existing project
-    stop                Stop a running project (Not implemented yet)
+    stop                Stop a running project
     delete              Delete a project
     clear               Clear a project
 
@@ -84,13 +84,13 @@ $ python3 bloodhound-automation.py data -z test.zip my_project
 ### Delete and clear the data
 
 ```
-$ python3.9 bloodhound-automation.py delete my_project
+$ python3 bloodhound-automation.py delete my_project
 [*] Deleting my_project project...
 [+] The project my_project has been successfuly deleted
 ```
 
 ```
-$ python3.9 bloodhound-automation.py clear my_project
+$ python3 bloodhound-automation.py clear my_project
 [+] Neo4j database cleared successfully
 ```
 
