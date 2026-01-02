@@ -6,3 +6,6 @@ projects
 
 /bloodhound.config.json
 /docker-compose.yml
+.devcontainer/
+.python-version
+.vscode/

@@ -63,6 +63,7 @@ services:
     image: docker.io/specterops/bloodhound:${BLOODHOUND_TAG:-latest}
     environment:
       - bhe_disable_cypher_qc=${bhe_disable_cypher_qc:-false}
+      - bhe_recreate_default_admin=${bhe_recreate_default_admin:-true}
     ports:
       - ${BLOODHOUND_PORT:-8080}:8080
     ### Uncomment to use your own bloodhound.config.json to configure the application

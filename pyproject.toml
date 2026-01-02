@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "bloodhound-automation"
+version = "1.0.0"
+description = "Automatically run and populate a new instance of BH CE in docker"
+authors = ["Tanguy-Boisset","aN0mad"]
+readme = "README.md"
+packages = [{include = "bloodhound_automation"}]
+
+[tool.poetry.dependencies]
+python = "^3.14"
+ansible-core = "^2.20.1"
+docker = "^7.1.0"
+pyyaml = "^6.0"
+dockerpty = "^0.4.1"
+requests = "^2.32.5"
+urllib3 = "^2.6.2"
+colorama = "^0.4.6"
+
+[tool.poetry.scripts]
+bloodhound-automation = "bloodhound_automation.bloodhound_automation:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"

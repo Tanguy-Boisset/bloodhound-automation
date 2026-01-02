@@ -10,10 +10,11 @@ import pickle
 
 from pathlib import Path
 from colorama import Fore, Back, Style
+import importlib.resources
 
 from typing import List
 
-import src.utils as utils
+import bloodhound_automation.src.utils as utils
 
 class Project:
     def __init__(self, name: str, source_directory: Path, ports: dict, password: str, timeout: int, no_gds: bool):
@@ -52,20 +53,35 @@ class Project:
         """
         Fill and copy the docker templates into the project folder
         """
-        with open("./templates/docker-compose.yml", "r") as ifile:
-            with open(self.source_directory / self.name / "docker-compose.yml", "w") as ofile:
-                tmp_file = (ifile.read()
-                            .replace("7687:", str(self.ports["bolt"])+":")
-                            .replace("7474:", str(self.ports["neo4j"])+":")
-                            .replace("8080", str(self.ports["web"])))
-                if self.no_gds:
-                    tmp_file = tmp_file.replace('- NEO4J_PLUGINS=["graph-data-science"]', '')
-                ofile.write(tmp_file)
+        # Read docker-compose template from package resources
+        docker_compose_content = (
+            importlib.resources.files('bloodhound_automation')
+            .joinpath('templates/docker-compose.yml')
+            .read_text()
+        )
         
-        with open("./templates/bloodhound.config.json", "r") as ifile:
-            with open(self.source_directory / self.name / "bloodhound.config.json", "w") as ofile:
-                ofile.write(ifile.read()
-                            .replace("8080", str(self.ports["web"])))
+        # Process docker-compose template
+        tmp_file = (docker_compose_content
+                    .replace("7687:", str(self.ports["bolt"])+":")
+                    .replace("7474:", str(self.ports["neo4j"])+":")
+                    .replace("8080", str(self.ports["web"])))
+        if self.no_gds:
+            tmp_file = tmp_file.replace('- NEO4J_PLUGINS=["graph-data-science"]', '')
+        
+        # Write docker-compose.yml
+        with open(self.source_directory / self.name / "docker-compose.yml", "w") as ofile:
+            ofile.write(tmp_file)
+        
+        # Read bloodhound config template from package resources
+        config_content = (
+            importlib.resources.files('bloodhound_automation')
+            .joinpath('templates/bloodhound.config.json')
+            .read_text()
+        )
+        
+        # Write bloodhound.config.json
+        with open(self.source_directory / self.name / "bloodhound.config.json", "w") as ofile:
+            ofile.write(config_content.replace("8080", str(self.ports["web"])))
 
 
     def getAdminPassword(self) -> str:

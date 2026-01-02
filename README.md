@@ -1,8 +1,31 @@
 # BloodHound automation
-Automatically run and populate a new instance of BH CE.
-Tested on Ubuntu 22.04 and MacOS. 
+Automatically run and populate a new instance of BH CE in docker.
 
-## How to run
+## Requirements
+Docker must be installed on the host and the user running `bloodhound-automation` must have permissions.
+
+## Installation
+### `virtualenv` installation
+Configure a virtualenv to ensure compatibility between packages.
+
+```bash
+virtualenv venv
+source venv/bin/activate
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
+```
+
+### `pipx` Installation
+Clone the repository locally and move into the project directory, then use `pipx` to do the installation.
+You can edit the docker file in the template folder for more customization.
+
+By default, it starts three containers. When the script is done, you can shutdown both the web and the postgresql containers if you only wish to keep the neo4j one.
+
+```bash
+pipx install .
+```
+
+## Help
 ```
 usage: bloodhound-automation.py [-h] {list,start,data,stop,delete} ...
 
@@ -22,15 +45,10 @@ options:
   -h, --help            show this help message and exit
 ```
 
-You can edit the docker file in the template folder for more customization.
-
-By default, it starts three containers. When the script is done, you can shutdown both the web and the postgresql containers if you only wish to keep the neo4j one.
-
-
 ## Example
 
 ### Create and start project
-```
+```bash
 $ python3 bloodhound-automation.py start -bp 10001 -np 10501 -wp 8001 my_project
 
 [*] Created ***/bloodhound-automation/projects directory
@@ -64,7 +82,7 @@ The docker log are accessible in the */bloodhound-automation/projects/my_project
 
 ### Import data
 
-```
+```bash
 $ python3 bloodhound-automation.py data -z test.zip my_project
 
 [+] Refreshed JWT token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDExMDYxMTQsImp0aSI6IjIiLCJpYXQiOjE3MDEwNzczMTQsInN1YiI6IjFhZWY2ZGVmLWFlNWEtNDAxMC1hZDcxLTFmZWNiYzFjZDE2OSJ9.qOUAEc1Bxm6AoNMEunR1j_kQayawkm9kdUJzTsLDb58
@@ -83,35 +101,16 @@ $ python3 bloodhound-automation.py data -z test.zip my_project
 
 ### Delete and clear the data
 
-```
+```bash
 $ python3 bloodhound-automation.py delete my_project
 [*] Deleting my_project project...
 [+] The project my_project has been successfuly deleted
 ```
 
-```
+```bash
 $ python3 bloodhound-automation.py clear my_project
 [+] Neo4j database cleared successfully
 ```
 
-
-## Requirements
-
-You need docker installed.
-
-## Dependencies
-
-Configure a virtualenv to ensure compatibility between packages.
-
-```
-virtualenv venv
-```
-```
-source venv/bin/activate
-```
-```
-pip3 install --upgrade pip
-```
-```
-pip3 install -r requirements.txt
-```
+## Notes
+The docker files for the containers are within `bloodhound_automation/templates`, they can be modified to fit custom needs.

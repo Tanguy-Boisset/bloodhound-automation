@@ -1,8 +1,19 @@
-ansible-core==2.12.0
-docker==5.0.3
-docker-compose==1.29.2
-dockerpty==0.4.1
-requests==2.25.1
-urllib3==1.26.5
-PyYaml==5.3.1
-colorama
+ansible-core==2.20.1 ; python_version >= "3.14" and python_version < "4.0"
+certifi==2025.11.12 ; python_version >= "3.14" and python_version < "4.0"
+cffi==2.0.0 ; python_version >= "3.14" and python_version < "4.0" and platform_python_implementation != "PyPy"
+charset-normalizer==3.4.4 ; python_version >= "3.14" and python_version < "4.0"
+colorama==0.4.6 ; python_version >= "3.14" and python_version < "4.0"
+cryptography==46.0.3 ; python_version >= "3.14" and python_version < "4.0"
+docker==7.1.0 ; python_version >= "3.14" and python_version < "4.0"
+dockerpty==0.4.1 ; python_version >= "3.14" and python_version < "4.0"
+idna==3.11 ; python_version >= "3.14" and python_version < "4.0"
+jinja2==3.1.6 ; python_version >= "3.14" and python_version < "4.0"
+markupsafe==3.0.3 ; python_version >= "3.14" and python_version < "4.0"
+packaging==25.0 ; python_version >= "3.14" and python_version < "4.0"
+pycparser==2.23 ; python_version >= "3.14" and python_version < "4.0" and platform_python_implementation != "PyPy" and implementation_name != "PyPy"
+pywin32==311 ; python_version >= "3.14" and python_version < "4.0" and sys_platform == "win32"
+pyyaml==6.0.3 ; python_version >= "3.14" and python_version < "4.0"
+requests==2.32.5 ; python_version >= "3.14" and python_version < "4.0"
+resolvelib==1.2.1 ; python_version >= "3.14" and python_version < "4.0"
+six==1.17.0 ; python_version >= "3.14" and python_version < "4.0"
+urllib3==2.6.2 ; python_version >= "3.14" and python_version < "4.0"

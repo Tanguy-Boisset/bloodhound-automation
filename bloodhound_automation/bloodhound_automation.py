@@ -6,10 +6,10 @@ import sys
 from pathlib import Path
 from colorama import Fore, Back, Style
 
-from src.project import Project
-    
+from bloodhound_automation.src.project import Project
 
-if __name__=="__main__":
+
+def main():
     parser = argparse.ArgumentParser(description="Automatically deploy a bloodhound instance and populate it with the SharpHound data")
     subparsers = parser.add_subparsers(dest='subparser', help="Action to run")
 
@@ -126,3 +126,6 @@ if __name__=="__main__":
 
     else:
         pass
+
+if __name__=="__main__":
+    main()
