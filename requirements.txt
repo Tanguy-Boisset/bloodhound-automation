@@ -6,4 +6,3 @@ requests==2.32.5
 urllib3==1.26.5
 PyYaml==5.3.1
 colorama
-
